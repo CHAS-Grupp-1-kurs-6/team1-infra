@@ -71,3 +71,36 @@ Lärdom: vid `Permission denied (publickey)` trots att nyckeltexten ser rätt ut
 - Diskutera i laget när den gamla `GCP_SA_KEY`-secreten ska tas bort, nu när WIF fungerar. Underlag för red team-reflektionen: vad en angripare skulle kunna göra med `roles/editor` på hela projektet om nyckeln läckt.
 - Kristoffer väntar fortfarande på att bli tillagd i `ssh_users`, han var sjuk under sessionen.
 - Fas 6, flaggorna via Spectre: nästa steg.
+
+- ---
+
+# Fas 2 – Spectre / Security Assessment
+
+**Datum:** 2026-09-07
+
+## Syfte
+
+Undersökningen genomfördes mot Spectre-miljön med fokus på nätverkskommunikation, LookingGlass-funktionalitet, intern åtkomst, DNS-provisionering, routing och applikationsbeteende.
+
+Målet var att identifiera säkerhetsbrister och följa upp relevanta ledtrådar i labbmiljön.
+
+## 1. Initial kartläggning
+
+Spectre-applikationen identifierades som en Python/Flask-baserad webbapplikation.
+
+Följande funktioner identifierades:
+
+- DNS – Subdomain Registration
+- LookingGlass – Network Diagnostics
+- Flag – Flag Submission
+
+LookingGlass används för att testa nätverksanslutning från Spectre edge, medan DNS-funktionen används för att registrera TLS-skyddade subdomäner.
+
+## 2. LookingGlass
+
+LookingGlass-funktionen testades med både publika och interna adresser.
+
+Den interna adressen:
+
+```text
+172.18.0.3

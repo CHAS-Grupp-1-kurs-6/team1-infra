@@ -12,7 +12,7 @@ ssh_users = [
   },
   {
     username   = "abdulghani"
-    public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOrKXdUs7hMiLiiroOv9qW3DqZcyjQvGMCA0lw/R8xb6 abdulghani.fkhir@chasacademy.se"
+    public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIEGREUpCtAFdhXYZX5Ti2wG/aLLidRZG828q2FvYc4P abdulghani.fkhir@chasacademy.se"
   },
   {
     username   = "mert"

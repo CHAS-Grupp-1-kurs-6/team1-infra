@@ -266,6 +266,38 @@ Installera nödvändiga nätverksdiagnostikverktyg automatiskt vid provisioning 
 > `dig` och `nc` behövde installeras manuellt.
 
 ---
+### 8. Netcat är tillfälligt installerat på jumphosten
+
+**Status:** 🔎 Under undersökning  
+**Severity:** Low  
+**Ansvarig:** Samuel
+
+#### Observation
+
+Netcat (`nc`) har tillfälligt installerats på jumphost-servern för att genomföra nätverkstester och samla information under säkerhetsanalysen.
+
+Verktyget behövs för de aktuella testerna men bör inte lämnas installerat efter att undersökningen är färdig om det inte finns ett fortsatt administrativt behov.
+
+#### Risk
+
+Ett extra diagnostikverktyg på en server kan öka den tillgängliga verktygsuppsättningen för en eventuell angripare som redan har fått åtkomst till systemet.
+
+Detta är främst en härdnings- och attackyttefråga och inte en konstaterad sårbarhet.
+
+#### Rekommenderad åtgärd
+
+När alla tester är färdiga:
+
+- Avinstallera Netcat från jumphosten.
+- Kontrollera att verktyget inte längre finns installerat.
+- Dokumentera att verktyget endast installerades för säkerhetstesterna.
+- Installera endast verktyg som behövs permanent.
+
+#### Bevis / resultat
+
+Netcat installerades tillfälligt på jumphosten för att genomföra nätverkstester.
+
+Efter avslutad testning ska paketet avinstalleras för att återställa och härda systemet.  
 
 ### 9. SOCKS5 / SSH Proxy-konfiguration
 

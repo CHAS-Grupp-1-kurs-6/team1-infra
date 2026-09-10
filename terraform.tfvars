@@ -17,5 +17,9 @@ ssh_users = [
   {
     username   = "mert"
     public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHyanTD58qDd4LttHns4Dcr8gT5DDg1D2hILcOkamXn/ mert.asanovski@chasacademy.se"
+  },
+  {
+    username   = "kristoffer"
+    public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIARuJS9UYh1fW+onRVGwx9MLhaWSmroZi7liyZlMnO4m kristoffer.toivanen@chasacademy.se"
   }
 ]

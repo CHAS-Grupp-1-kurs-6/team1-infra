@@ -44,6 +44,10 @@ variable "os_admin_users" {
   description = "List of Google identities granted OS Admin Login access to computing instance"
   default = [
     "dennis.heimbert@chasacademy.se",
-    "abdulghani.fkhir@chasacademy.se"
+    "abdulghani.fkhir@chasacademy.se",
+    "malcolm.skoglund@chasacademy.se",
+    "samuel.engstrom@chasacademy.se",
+    "mert.asanovski@chasacademy.se",
+    "kristoffer.toivanen@chasacademy.se"
   ]
 }

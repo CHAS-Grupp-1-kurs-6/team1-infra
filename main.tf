@@ -102,6 +102,7 @@ resource "google_compute_instance" "jumphost" {
 
   metadata = {
     ssh-keys               = join("\n", [for user in var.ssh_users : "${user.username}:${user.public_key}"])
+    enable-oslogin         = "TRUE"
     block-project-ssh-keys = true
     startup-script         = <<-EOT
       #!/bin/bash
@@ -121,10 +122,16 @@ resource "google_compute_instance" "jumphost" {
 
       DEFAULT_IF=$(ip ro sh default | awk '/default/ {print $5}')
       iptables -t nat -A POSTROUTING -o "$DEFAULT_IF" -s "${local.subnet_cidr}" -j MASQUERADE
-    EOT
+        EOT
+  }
+
+  service_account {
+    email  = "team${var.team_id}-jumphost@${var.project_id}.iam.gserviceaccount.com"
+    scopes = ["cloud-platform"]
   }
 }
 
+# resource "google_compute_instance" "primary" {
 # resource "google_compute_instance" "primary" {
 #   name         = "team${var.team_id}-primary"
 #   machine_type = "e2-small"
@@ -179,4 +186,12 @@ resource "google_compute_firewall" "allow_traffic" {
 
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["jumphost", "primary"]
+}
+
+resource "google_compute_instance_iam_member" "jumphost_os_login" {
+  for_each      = toset(var.os_admin_users)
+  instance_name = google_compute_instance.jumphost.name
+  zone          = google_compute_instance.jumphost.zone
+  role          = "roles/compute.osAdminLogin"
+  member        = "user:${each.value}"
 }

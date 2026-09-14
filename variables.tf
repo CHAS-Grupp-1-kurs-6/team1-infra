@@ -39,3 +39,11 @@ variable "ssh_users" {
     public_key = string
   }))
 }
+variable "os_admin_users" {
+  type        = list(string)
+  description = "List of Google identities granted OS Admin Login access to computing instance"
+  default = [
+    "dennis.heimbert@chasacademy.se",
+    "abdulghani.fkhir@chasacademy.se"
+  ]
+}

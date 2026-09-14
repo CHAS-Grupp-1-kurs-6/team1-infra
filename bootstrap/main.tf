@@ -99,6 +99,4 @@ resource "google_service_account_key" "cicd" {
   service_account_id = google_service_account.cicd.name
 }
 service_account {
-  email  = "team${var.team_id}-jumphost@${var.project_id}.iam.gserviceaccount.com"
-  scopes = ["cloud-platform"]
-}
+

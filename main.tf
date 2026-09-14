@@ -80,7 +80,13 @@ resource "google_compute_instance" "jumphost" {
 
   allow_stopping_for_update = true
   can_ip_forward            = true
+ 
+  service_account {
+    email  = "team${var.team_id}-jumphost@${var.project_id}.iam.gserviceaccount.com"
+    scopes = ["cloud-platform"]
+  }
 
+ 
   tags = ["jumphost"]
 
   resource_policies = [google_compute_resource_policy.daily_schedule.id]
@@ -99,10 +105,7 @@ resource "google_compute_instance" "jumphost" {
       nat_ip = google_compute_address.jumphost.address
     }
   }
-service_account {
-  email  = "team${var.team_id}-jumphost@${var.project_id}.iam.gserviceaccount.com"
-  scopes = ["cloud-platform"]
-}
+
   metadata = {
     ssh-keys               = join("\n", [for user in var.ssh_users : "${user.username}:${user.public_key}"])
     block-project-ssh-keys = true

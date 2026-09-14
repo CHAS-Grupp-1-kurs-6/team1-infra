@@ -78,12 +78,6 @@ resource "google_compute_instance" "jumphost" {
   machine_type = "e2-micro"
   zone         = local.jumphost_zone
 
-    service_account {
-    email  = "team${var.team_id}-jumphost@${var.project_id}.iam.gserviceaccount.com"
-    scopes = ["cloud-platform"]
-  }
-
-
   allow_stopping_for_update = true
   can_ip_forward            = true
 

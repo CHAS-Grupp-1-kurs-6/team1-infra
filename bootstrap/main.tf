@@ -98,5 +98,4 @@ resource "google_service_account_iam_member" "cicd_workload_identity" {
 resource "google_service_account_key" "cicd" {
   service_account_id = google_service_account.cicd.name
 }
-service_account {
 

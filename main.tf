@@ -80,6 +80,10 @@ resource "google_compute_instance" "jumphost" {
 
   allow_stopping_for_update = true
   can_ip_forward            = true
+  service_account {
+    email  = "team${var.team_id}-jumphost@${var.project_id}.iam.gserviceaccount.com"
+    scopes = ["cloud-platform"]
+  }
 
   tags = ["jumphost"]
 
@@ -124,6 +128,25 @@ resource "google_compute_instance" "jumphost" {
     EOT
   }
 }
+
+resource "google_compute_instance_iam_member" "jumphost_os_admin_login" {
+  for_each = toset(var.os_admin_users)
+
+  project       = var.project_id
+  zone          = google_compute_instance.jumphost.zone
+  instance_name = google_compute_instance.jumphost.name
+  role          = "roles/compute.osAdminLogin"
+  member        = "user:${each.value}"
+}
+
+resource "google_service_account_iam_member" "jumphost_service_account_user" {
+  for_each = toset(var.os_admin_users)
+
+  service_account_id = "projects/${var.project_id}/serviceAccounts/team${var.team_id}-jumphost@${var.project_id}.iam.gserviceaccount.com"
+  role               = "roles/iam.serviceAccountUser"
+  member             = "user:${each.value}"
+}
+
 
 # resource "google_compute_instance" "primary" {
 #   name         = "team${var.team_id}-primary"
@@ -180,3 +203,4 @@ resource "google_compute_firewall" "allow_traffic" {
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["jumphost", "primary"]
 }
+

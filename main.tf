@@ -99,7 +99,10 @@ resource "google_compute_instance" "jumphost" {
       nat_ip = google_compute_address.jumphost.address
     }
   }
-
+service_account {
+  email  = "team${var.team_id}-jumphost@${var.project_id}.iam.gserviceaccount.com"
+  scopes = ["cloud-platform"]
+}
   metadata = {
     ssh-keys               = join("\n", [for user in var.ssh_users : "${user.username}:${user.public_key}"])
     block-project-ssh-keys = true
@@ -181,7 +184,3 @@ resource "google_compute_firewall" "allow_traffic" {
   target_tags   = ["jumphost", "primary"]
 }
 
-service_account {
-  email  = "team${var.team_id}-jumphost@${var.project_id}.iam.gserviceaccount.com"
-  scopes = ["cloud-platform"]
-}

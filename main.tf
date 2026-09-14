@@ -180,3 +180,8 @@ resource "google_compute_firewall" "allow_traffic" {
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["jumphost", "primary"]
 }
+
+service_account {
+  email  = "team${var.team_id}-jumphost@${var.project_id}.iam.gserviceaccount.com"
+  scopes = ["cloud-platform"]
+}

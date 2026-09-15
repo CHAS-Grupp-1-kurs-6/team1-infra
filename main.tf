@@ -111,11 +111,8 @@ resource "google_compute_instance" "jumphost" {
   }
 
   metadata = {
-    # Enable Google Cloud OS Login.
-    # Existing SSH keys are temporarily retained until OS Login
-    # has been deployed and verified successfully.
+    # Google Cloud OS Login is used for SSH access.
     enable-oslogin         = "TRUE"
-    ssh-keys               = join("\n", [for user in var.ssh_users : "${user.username}:${user.public_key}"])
     block-project-ssh-keys = true
 
     startup-script = <<-EOT
@@ -151,10 +148,6 @@ resource "google_compute_instance_iam_member" "jumphost_os_admin_login" {
   role          = "roles/compute.osAdminLogin"
   member        = "user:${each.value}"
 }
-
-# Required when OS Login users connect to an instance
-# that runs using a service account.
-
 
 # Primary instance is intentionally disabled for now.
 #

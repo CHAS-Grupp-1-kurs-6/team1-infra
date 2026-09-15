@@ -154,13 +154,6 @@ resource "google_compute_instance_iam_member" "jumphost_os_admin_login" {
 
 # Required when OS Login users connect to an instance
 # that runs using a service account.
-resource "google_service_account_iam_member" "jumphost_service_account_user" {
-  for_each = toset(var.os_admin_users)
-
-  service_account_id = "projects/${var.project_id}/serviceAccounts/team${var.team_id}-jumphost@${var.project_id}.iam.gserviceaccount.com"
-  role               = "roles/iam.serviceAccountUser"
-  member             = "user:${each.value}"
-}
 
 
 # Primary instance is intentionally disabled for now.

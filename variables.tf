@@ -39,3 +39,8 @@ variable "ssh_users" {
     public_key = string
   }))
 }
+
+variable "os_admin_users" {
+  description = "Google identities granted OS Admin Login access to the jumphost"
+  type        = list(string)
+}

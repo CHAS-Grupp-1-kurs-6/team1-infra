@@ -31,6 +31,7 @@ resource "google_storage_bucket" "terraform_state" {
   location = "EU"
 
   uniform_bucket_level_access = true
+  public_access_prevention    = "enforced"
 
   lifecycle_rule {
     condition {
@@ -48,12 +49,6 @@ resource "google_storage_bucket" "terraform_state" {
   lifecycle {
     prevent_destroy = true
   }
-}
-
-resource "google_storage_bucket_iam_member" "read_bucket" {
-  bucket = google_storage_bucket.terraform_state.name
-  role   = "roles/storage.objectViewer"
-  member = "allAuthenticatedUsers"
 }
 
 resource "google_iam_workload_identity_pool" "github" {

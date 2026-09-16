@@ -109,9 +109,9 @@ Eftersom WIF redan är implementerat bör den gamla långlivade nyckeln inte lä
 
 ### 4. GitHub Branch Protection kan inte enforceas fullt ut
 
-**Status:** ☐ Att verifiera  
+**Status:** 🟢 Åtgärdat 
 **Severity:** Medium  
-**Ansvarig:** __________
+**Ansvarig:** ____Kristoffer______
 
 #### Vad ska undersökas?
 
@@ -132,7 +132,7 @@ Använd en GitHub-plan/funktionalitet som stödjer den önskade enforcement-niv�
 
 #### Bevis / resultat
 
-> Fylls i efter verifiering.
+>NU krävs granskning av 2 personer innan merge
 
 ---
 

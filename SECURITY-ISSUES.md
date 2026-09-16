@@ -79,9 +79,9 @@ Byt från breda roller till specifika roller som motsvarar de operationer CI/CD 
 
 ### 3. Gammal GCP Service Account Key bör tas bort efter WIF
 
-**Status:** ☐ Att verifiera  
+**Status:** 🟢 Åtgärdat  
 **Severity:** High  
-**Ansvarig:** __________
+**Ansvarig:** ____Kristoffer______
 
 #### Vad ska undersökas?
 

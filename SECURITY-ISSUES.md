@@ -166,7 +166,7 @@ Använd fingerprint-verifiering när SSH-nycklar distribueras eller felsöks.
 #### Bevis / resultat
 
 > Fylls i efter verifiering.
-
+Samuel - Om vi stänger av funktionen nu att skapa nya fingerprints när vi vet att alla som ska har åtkomst har loggat in och skapat sina fingerprints så hade det varit ett bra defensivt lager ifall om någons public key skulle bli stulet. 
 ---
 
 ### 6. GCP State Bucket – åtkomst och skydd

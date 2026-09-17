@@ -109,7 +109,6 @@ resource "google_compute_instance" "jumphost" {
       nat_ip = google_compute_address.jumphost.address
     }
   }
-
   metadata = {
     # Google Cloud OS Login is used for SSH access.
     enable-oslogin         = "TRUE"
@@ -131,10 +130,28 @@ resource "google_compute_instance" "jumphost" {
       echo 'net.ipv4.ip_forward=1' > /etc/sysctl.d/99-ip-forward.conf
       sysctl --system
 
+      apt-get update
+      apt-get install -y dnsmasq
+
+      cat > /etc/dnsmasq.d/tailscale-gcp-dns.conf <<'EOF'
+      interface=tailscale0
+      bind-dynamic
+      server=169.254.169.254
+      EOF
+
+      sed -i '/^bind-interfaces$/d' /etc/dnsmasq.d/team1.conf 2>/dev/null || true
+      dnsmasq --test
+      systemctl restart dnsmasq
+
       DEFAULT_IF=$(ip ro sh default | awk '/default/ {print $5}')
-      iptables -t nat -A POSTROUTING -o "$DEFAULT_IF" -s "${local.subnet_cidr}" -j MASQUERADE
+iptables -t nat -C POSTROUTING -o "$DEFAULT_IF" -s "${local.subnet_cidr}" -j MASQUERADE 2>/dev/null || \
+iptables -t nat -A POSTROUTING -o "$DEFAULT_IF" -s "${local.subnet_cidr}" -j MASQUERADE
+
+iptables -t nat -C POSTROUTING -o "$DEFAULT_IF" -d 10.0.0.2/32 -j MASQUERADE 2>/dev/null || \
+iptables -t nat -A POSTROUTING -o "$DEFAULT_IF" -d 10.0.0.2/32 -j MASQUERADE
     EOT
   }
+
 }
 
 # Give configured users OS Login administrator access
@@ -209,3 +226,4 @@ resource "google_compute_firewall" "allow_traffic" {
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["jumphost", "primary"]
 }
+

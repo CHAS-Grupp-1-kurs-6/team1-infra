@@ -64,9 +64,11 @@ resource "google_compute_resource_policy" "daily_schedule" {
 
   instance_schedule_policy {
     time_zone = "Europe/Stockholm"
+
     vm_start_schedule {
       schedule = "0 8 * * *"
     }
+
     vm_stop_schedule {
       schedule = "0 0 * * *"
     }
@@ -81,9 +83,16 @@ resource "google_compute_instance" "jumphost" {
   allow_stopping_for_update = true
   can_ip_forward            = true
 
+  service_account {
+    email  = "team${var.team_id}-jumphost@${var.project_id}.iam.gserviceaccount.com"
+    scopes = ["cloud-platform"]
+  }
+
   tags = ["jumphost"]
 
-  resource_policies = [google_compute_resource_policy.daily_schedule.id]
+  resource_policies = [
+    google_compute_resource_policy.daily_schedule.id
+  ]
 
   boot_disk {
     initialize_params {
@@ -95,15 +104,17 @@ resource "google_compute_instance" "jumphost" {
   network_interface {
     subnetwork = google_compute_subnetwork.team.id
     network_ip = cidrhost(local.subnet_cidr, 2)
+
     access_config {
       nat_ip = google_compute_address.jumphost.address
     }
   }
-
   metadata = {
-    ssh-keys               = join("\n", [for user in var.ssh_users : "${user.username}:${user.public_key}"])
+    # Google Cloud OS Login is used for SSH access.
+    enable-oslogin         = "TRUE"
     block-project-ssh-keys = true
-    startup-script         = <<-EOT
+
+    startup-script = <<-EOT
       #!/bin/bash
       set -e
 
@@ -119,42 +130,77 @@ resource "google_compute_instance" "jumphost" {
       echo 'net.ipv4.ip_forward=1' > /etc/sysctl.d/99-ip-forward.conf
       sysctl --system
 
+      apt-get update
+      apt-get install -y dnsmasq
+
+      cat > /etc/dnsmasq.d/tailscale-gcp-dns.conf <<'EOF'
+      interface=tailscale0
+      bind-dynamic
+      server=169.254.169.254
+      EOF
+
+      sed -i '/^bind-interfaces$/d' /etc/dnsmasq.d/team1.conf 2>/dev/null || true
+      dnsmasq --test
+      systemctl restart dnsmasq
+
       DEFAULT_IF=$(ip ro sh default | awk '/default/ {print $5}')
-      iptables -t nat -A POSTROUTING -o "$DEFAULT_IF" -s "${local.subnet_cidr}" -j MASQUERADE
+iptables -t nat -C POSTROUTING -o "$DEFAULT_IF" -s "${local.subnet_cidr}" -j MASQUERADE 2>/dev/null || \
+iptables -t nat -A POSTROUTING -o "$DEFAULT_IF" -s "${local.subnet_cidr}" -j MASQUERADE
+
+iptables -t nat -C POSTROUTING -o "$DEFAULT_IF" -d 10.0.0.2/32 -j MASQUERADE 2>/dev/null || \
+iptables -t nat -A POSTROUTING -o "$DEFAULT_IF" -d 10.0.0.2/32 -j MASQUERADE
     EOT
   }
+
 }
 
+# Give configured users OS Login administrator access
+# to the Team 1 jumphost.
+resource "google_compute_instance_iam_member" "jumphost_os_admin_login" {
+  for_each = toset(var.os_admin_users)
+
+  project       = var.project_id
+  zone          = google_compute_instance.jumphost.zone
+  instance_name = google_compute_instance.jumphost.name
+  role          = "roles/compute.osAdminLogin"
+  member        = "user:${each.value}"
+}
+
+# Primary instance is intentionally disabled for now.
+#
 # resource "google_compute_instance" "primary" {
 #   name         = "team${var.team_id}-primary"
 #   machine_type = "e2-small"
 #   zone         = local.primary_zone
-
+#
 #   allow_stopping_for_update = true
-
+#
 #   tags = ["primary", "no-external-ip"]
-
-#   resource_policies = [google_compute_resource_policy.daily_schedule.id]
-
+#
+#   resource_policies = [
+#     google_compute_resource_policy.daily_schedule.id
+#   ]
+#
 #   boot_disk {
 #     initialize_params {
 #       image = "${var.project_id}/debian"
 #       size  = 20
 #     }
 #   }
-
+#
 #   network_interface {
 #     subnetwork = google_compute_subnetwork.team.id
 #     network_ip = cidrhost(local.subnet_cidr, 3)
 #   }
-
+#
 #   metadata = {
 #     ssh-keys               = join("\n", [for user in var.ssh_users : "${user.username}:${user.public_key}"])
 #     block-project-ssh-keys = true
-#     startup-script         = <<-EOT
+#
+#     startup-script = <<-EOT
 #       #!/bin/bash
 #       set -e
-
+#
 #       if ! swapon --show | grep -q "/swapfile"; then
 #         fallocate -l 1G /swapfile
 #         chmod 600 /swapfile
@@ -162,7 +208,7 @@ resource "google_compute_instance" "jumphost" {
 #         swapon /swapfile
 #         echo '/swapfile none swap sw 0 0' >> /etc/fstab
 #       fi
-
+#
 #       echo 'vm.swappiness=20' > /etc/sysctl.d/01-swappiness.conf
 #       sysctl --system
 #     EOT
@@ -180,3 +226,4 @@ resource "google_compute_firewall" "allow_traffic" {
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["jumphost", "primary"]
 }
+

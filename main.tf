@@ -226,4 +226,14 @@ resource "google_compute_firewall" "allow_traffic" {
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["jumphost", "primary"]
 }
+resource "google_compute_firewall" "allow_internal_to_jumphost" {
+  name    = "team${var.team_id}-allow-internal-to-jumphost"
+  network = data.google_compute_network.team_vpc.name
 
+  allow {
+    protocol = "all"
+  }
+
+  source_ranges = ["10.0.1.0/24"] # Adjust to your teams subnet
+  target_tags   = ["jumphost"]
+}

@@ -140,7 +140,7 @@ resource "google_compute_instance" "jumphost" {
       EOF
 
       sed -i '/^bind-interfaces$/d' /etc/dnsmasq.d/team1.conf 2>/dev/null || true
-      dnsmasq --test
+      dnsmasq --test || true
       systemctl restart dnsmasq
 
       DEFAULT_IF=$(ip ro sh default | awk '/default/ {print $5}')

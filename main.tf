@@ -144,10 +144,10 @@ resource "google_compute_instance" "jumphost" {
       systemctl restart dnsmasq
 
       DEFAULT_IF=$(ip ro sh default | awk '/default/ {print $5}')
+      iptables -t nat -A POSTROUTING -o "$DEFAULT_IF" -s "${local.subnet_cidr}" -j MASQUERADE
 
-iptables -t nat -A POSTROUTING -o "$DEFAULT_IF" -s "${local.subnet_cidr}" -j MASQUERADE
-iptables -t nat -A POSTROUTING -o "$DEFAULT_IF" -d 10.0.0.2/32 -j MASQUERADE
-    EOT
+      iptables -t nat -A POSTROUTING -o "$DEFAULT_IF" -d 10.0.0.2/32 -j MASQUERADE
+   EOT
   }
 
 }

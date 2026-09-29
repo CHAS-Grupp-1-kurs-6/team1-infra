@@ -130,19 +130,6 @@ resource "google_compute_instance" "jumphost" {
       echo 'net.ipv4.ip_forward=1' > /etc/sysctl.d/99-ip-forward.conf
       sysctl --system
 
-      apt-get update
-      apt-get install -y dnsmasq
-
-      cat > /etc/dnsmasq.d/tailscale-gcp-dns.conf <<'EOF'
-      interface=tailscale0
-      bind-dynamic
-      server=169.254.169.254
-      EOF
-
-      sed -i '/^bind-interfaces$/d' /etc/dnsmasq.d/team1.conf 2>/dev/null || true
-      dnsmasq --test || true
-      systemctl restart dnsmasq
-
       DEFAULT_IF=$(ip ro sh default | awk '/default/ {print $5}')
       iptables -t nat -A POSTROUTING -o "$DEFAULT_IF" -s "${local.subnet_cidr}" -j MASQUERADE
 

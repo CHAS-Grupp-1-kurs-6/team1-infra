@@ -110,3 +110,10 @@ resource "google_service_account_iam_member" "cicd_workload_identity" {
 # resource "google_service_account_key" "cicd" {
 #  service_account_id = google_service_account.cicd.name
 # }
+
+# VM-tjänstekontot får skriva loggar till Cloud Logging (spårbarhet för blue team)
+resource "google_project_iam_member" "vm_log_writer_1" {
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:team1-jumphost@itsx25-lab.iam.gserviceaccount.com"
+}

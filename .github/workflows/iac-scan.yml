@@ -1,0 +1,22 @@
+name: IaC Security Scan
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  trivy-config:
+    name: Trivy IaC scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan Terraform for HIGH/CRITICAL misconfigurations
+        run: |
+          docker run --rm -v "$PWD:/src" aquasec/trivy:latest \
+            config --severity HIGH,CRITICAL --exit-code 1 /src

@@ -72,3 +72,20 @@ resource "google_compute_firewall" "allow_headscale_proxy" {
   source_ranges = ["10.0.0.2/32"]
   target_tags   = ["jumphost"]
 }
+
+import {
+  to = google_compute_firewall.allow_internal
+  id = "projects/itsx25-lab/global/firewalls/team1-allow-internal"
+}
+
+resource "google_compute_firewall" "allow_internal" {
+  name    = "team${var.team_id}-allow-internal"
+  network = data.google_compute_network.team_vpc.name
+
+  allow {
+    protocol = "all"
+  }
+
+  source_ranges = ["10.0.1.0/24"]
+  target_tags   = ["primary", "jumphost"]
+}

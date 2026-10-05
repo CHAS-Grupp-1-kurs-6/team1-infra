@@ -1,0 +1,32 @@
+# Dependency-Track, chart dependency-track/dependency-track 2.5.0
+# Installeras manuellt på team1-primary:
+#   helm upgrade dependency-track dependency-track/dependency-track \
+#     --version 2.5.0 -n dtrack -f values.yaml
+
+apiServer:
+  web:
+    # Minnesgräns efter incidenten 2026-10-05 (swap-thrashing på primary, 1,9 GB RAM)
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        memory: 768Mi
+    # Java får använda 75 % av containerns minnesgräns (cirka 575 MiB heap)
+    extraEnv:
+      - name: JAVA_OPTIONS
+        value: "-XX:MaxRAMPercentage=75.0"
+
+# Inget lösenord i klartext. Credentials hämtas från en Kubernetes-secret.
+database:
+  existingSecret:
+    name: dtrack-db
+
+frontend:
+  apiBaseUrl: "http://localhost:8080"
+
+secretManagement:
+  database:
+    kek:
+      existingSecret:
+        name: dtrack-kek

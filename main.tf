@@ -40,15 +40,6 @@ resource "google_compute_address" "jumphost" {
   region = var.region
 }
 
-resource "google_compute_route" "internet_via_jumphost" {
-  name              = "team${var.team_id}-internet-via-jumphost"
-  network           = data.google_compute_network.team_vpc.id
-  dest_range        = "0.0.0.0/0"
-  priority          = 800
-  next_hop_instance = google_compute_instance.jumphost.self_link
-  tags              = ["no-external-ip"]
-}
-
 resource "google_compute_route" "tailnet_via_jumphost" {
   name              = "team${var.team_id}-tailnet-via-jumphost"
   network           = data.google_compute_network.team_vpc.id
@@ -179,6 +170,7 @@ resource "google_compute_instance" "primary" {
   }
   #
   metadata = {
+    "enable-oslogin"       = "TRUE"
     ssh-keys               = join("\n", [for user in var.ssh_users : "${user.username}:${user.public_key}"])
     block-project-ssh-keys = true
     #
@@ -200,17 +192,6 @@ resource "google_compute_instance" "primary" {
   }
 }
 
-resource "google_compute_firewall" "allow_traffic" {
-  name    = "team${var.team_id}-allow-traffic"
-  network = data.google_compute_network.team_vpc.name
-
-  allow {
-    protocol = "all"
-  }
-
-  source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["jumphost", "primary"]
-}
 resource "google_compute_firewall" "allow_internal_to_jumphost" {
   name    = "team${var.team_id}-allow-internal-to-jumphost"
   network = data.google_compute_network.team_vpc.name

@@ -78,10 +78,27 @@ resource "google_service_account" "cicd" {
   display_name = "CI/CD Pipeline Service Account"
 }
 
-resource "google_project_iam_member" "cicd_editor" {
-  project = var.project_id
-  role    = "roles/editor"
-  member  = "serviceAccount:${google_service_account.cicd.email}"
+# Least privilege: bara de roller Terraform-resurserna i root-modulen kräver
+locals {
+  cicd_project_roles = toset([
+    "roles/compute.instanceAdmin.v1", # VM:ar, resource policy (schema)
+    "roles/compute.networkAdmin",     # routes, router, NAT, adresser, subnät
+    "roles/compute.securityAdmin",    # brandväggsregler
+  ])
+}
+
+resource "google_project_iam_member" "cicd_roles" {
+  for_each = local.cicd_project_roles
+  project  = var.project_id
+  role     = each.value
+  member   = "serviceAccount:${google_service_account.cicd.email}"
+}
+
+# State-filen: bara objekt i den egna bucketen, inte hela projektets storage
+resource "google_storage_bucket_iam_member" "cicd_state" {
+  bucket = google_storage_bucket.terraform_state.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.cicd.email}"
 }
 
 resource "google_service_account_iam_member" "cicd_workload_identity" {
@@ -93,3 +110,10 @@ resource "google_service_account_iam_member" "cicd_workload_identity" {
 # resource "google_service_account_key" "cicd" {
 #  service_account_id = google_service_account.cicd.name
 # }
+
+# VM-tjänstekontot får skriva loggar till Cloud Logging (spårbarhet för blue team)
+resource "google_project_iam_member" "vm_log_writer_1" {
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:team1-jumphost@itsx25-lab.iam.gserviceaccount.com"
+}
